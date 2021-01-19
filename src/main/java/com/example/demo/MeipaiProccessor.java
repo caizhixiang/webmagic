@@ -15,7 +15,7 @@ public class MeipaiProccessor  implements PageProcessor {
 
     @Override
     public void process(Page page) {
-        System.setProperty("webdriver.chrome.driver","C:\\Users\\caizx\\Desktop\\chromedriver.exe");
+        System.setProperty("webdriver.chrome.driver","C:\\workspace\\webmagic\\src\\main\\resources\\chromedriver.exe");
         WebDriver driver = new ChromeDriver();
         driver.get("http://data.eastmoney.com/bkzj/hy.html");
         //防止页面未能及时加载出来而设置一段时间延迟
