@@ -14,7 +14,7 @@ public class DemoPageProcessor implements PageProcessor {
     @Override
     public void process(Page page) {
 
-        log.info("{}", page);
+        System.out.println(""+ page);
         page.putField("key", page.getHtml());
     }
 

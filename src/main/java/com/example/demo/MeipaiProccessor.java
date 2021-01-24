@@ -25,7 +25,7 @@ public class MeipaiProccessor  implements PageProcessor {
             e.printStackTrace();
         }
         //找到登录按钮，点击
-        driver.findElement(By.id("headerLogin")).click();
+        driver.findElement(By.id("filter_stat")).findElements(By.tagName("li")).get(1).click();
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
