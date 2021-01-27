@@ -1,18 +1,20 @@
 package com.example.demo;
 
-import com.gargoylesoftware.htmlunit.*;
-import com.gargoylesoftware.htmlunit.html.HtmlDivision;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-
-import org.assertj.core.api.Assert;
+import com.example.demo.dto.CapitalInflowRankingDto;
+import com.gargoylesoftware.htmlunit.BrowserVersion;
+import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.*;
+import org.assertj.core.util.Lists;
 
 import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.Charset;
+import java.lang.reflect.Field;
 import java.util.List;
 
 public class Htmlutil {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
+        List<CapitalInflowRankingDto> result = Lists.newArrayList();
+
         String url = "http://data.eastmoney.com/bkzj/hy.html";
         // TODO Auto-generated method stub
         final WebClient webClient = new WebClient(BrowserVersion.CHROME);
@@ -28,17 +30,46 @@ public class Htmlutil {
             page = webClient.getPage(url);//尝试加载上面图片例子给出的网页
         } catch (Exception e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             webClient.close();
         }
 
         webClient.waitForBackgroundJavaScript(30000);//异步JS执行需要耗时,所以这里线程要阻塞30秒,等待异步JS执行结束
 
         List<Object> dataview = page.getElementById("dataview").getChildNodes().get(1).getLastChild().getByXPath("table/tbody");
+        DomNodeList<DomNode> childNodes = ((HtmlTableBody) dataview.get(0)).getChildNodes();
+        childNodes.stream().forEach(childNode -> {
+            DomNodeList<HtmlElement> td = ((HtmlTableRow) childNode).getElementsByTagName("td");
+            CapitalInflowRankingDto capitalInflowRankingDto = new CapitalInflowRankingDto();
+            for (int i = 0; i < td.size(); i++) {
+                Field[] fields = CapitalInflowRankingDto.class.getDeclaredFields();
+                Field field = fields[i];
+                field.setAccessible(true);
 
-        String pageXml = page.asXml();//直接将加载完成的页面转换成xml格式的字符串
+                DomNode domNode = td.get(i).getFirstChild();
+                String nodeName = domNode.getNodeName();
+                if ("#text".equals(nodeName)) {
+                    try {
+                        field.set(capitalInflowRankingDto, domNode.getNodeValue());
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                } else if ("a".equals(nodeName)) {
+                    String href = ((HtmlAnchor) domNode).getAttribute("href");
+                    try {
+                        field.set(capitalInflowRankingDto, href);
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+//                    String textContent = domNode.getTextContent();
+//                    System.out.print(textContent + "  ");
+                }
+
+            }
+            result.add(capitalInflowRankingDto);
+
+        });
 
 
-//        final String pageAsText = page.asText();
     }
 }
