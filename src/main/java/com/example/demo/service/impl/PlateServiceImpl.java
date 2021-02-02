@@ -1,40 +1,28 @@
-package com.example.demo;
+package com.example.demo.service.impl;
 
 import com.example.demo.dto.CapitalInflowRankingDto;
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
-import com.gargoylesoftware.htmlunit.WebClient;
+import com.example.demo.service.PlateService;
+import com.example.demo.utils.Htmlutil;
 import com.gargoylesoftware.htmlunit.html.*;
+import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.util.Lists;
+import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
 
-public class Htmlutil {
-    public static void main(String[] args) throws Exception {
+@Service
+@Slf4j
+public class PlateServiceImpl implements PlateService {
+    /**
+     * 获取板块资金流排行榜
+     */
+    @Override
+    public void getPlateCapitalFlow() {
         List<CapitalInflowRankingDto> result = Lists.newArrayList();
-
         String url = "http://data.eastmoney.com/bkzj/hy.html";
-        // TODO Auto-generated method stub
-        final WebClient webClient = new WebClient(BrowserVersion.CHROME);
-        webClient.getOptions().setThrowExceptionOnScriptError(false);//当JS执行出错的时候是否抛出异常, 这里选择不需要
-        webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);//当HTTP的状态非200时是否抛出异常, 这里选择不需要
-        webClient.getOptions().setActiveXNative(false);
-        webClient.getOptions().setCssEnabled(false);//是否启用CSS, 因为不需要展现页面, 所以不需要启用
-        webClient.getOptions().setJavaScriptEnabled(true); //很重要，启用JS
-        webClient.setAjaxController(new NicelyResynchronizingAjaxController());//很重要，设置支持AJAX
 
-        HtmlPage page = null;
-        try {
-            page = webClient.getPage(url);//尝试加载上面图片例子给出的网页
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            webClient.close();
-        }
-
-        webClient.waitForBackgroundJavaScript(30000);//异步JS执行需要耗时,所以这里线程要阻塞30秒,等待异步JS执行结束
+        HtmlPage page = Htmlutil.getHtmlPage(url);
 
         List<Object> dataview = page.getElementById("dataview").getChildNodes().get(1).getLastChild().getByXPath("table/tbody");
         DomNodeList<DomNode> childNodes = ((HtmlTableBody) dataview.get(0)).getChildNodes();
@@ -54,14 +42,21 @@ public class Htmlutil {
                     } catch (IllegalAccessException e) {
                         e.printStackTrace();
                     }
-                } else if ("a".equals(nodeName)) {
-                    String href = ((HtmlAnchor) domNode).getAttribute("href");
+                } else if ("span".equals(nodeName)) {
                     try {
-                        field.set(capitalInflowRankingDto, href);
+                        field.set(capitalInflowRankingDto, domNode.getFirstChild().getNodeValue());
                     } catch (IllegalAccessException e) {
                         e.printStackTrace();
                     }
-//                    String textContent = domNode.getTextContent();
+                } else if ("a".equals(nodeName)) {
+                    String href = ((HtmlAnchor) domNode).getAttribute("href");
+                    String textContent = domNode.getTextContent();
+                    String value = textContent + "|==|" + href;
+                    try {
+                        field.set(capitalInflowRankingDto, value);
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
 //                    System.out.print(textContent + "  ");
                 }
 
@@ -69,7 +64,6 @@ public class Htmlutil {
             result.add(capitalInflowRankingDto);
 
         });
-
-
+        System.out.println(result);
     }
 }
