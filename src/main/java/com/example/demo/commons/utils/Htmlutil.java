@@ -1,4 +1,4 @@
-package com.example.demo.utils;
+package com.example.demo.commons.utils;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;

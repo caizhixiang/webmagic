@@ -2,10 +2,10 @@ package com.example.demo.service.impl;
 
 import com.example.demo.dto.CapitalInflowRankingDto;
 import com.example.demo.service.PlateService;
-import com.example.demo.utils.Htmlutil;
+import com.example.demo.commons.utils.Htmlutil;
 import com.gargoylesoftware.htmlunit.html.*;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
-import org.assertj.core.util.Lists;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
